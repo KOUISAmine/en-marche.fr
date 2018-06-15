@@ -11,6 +11,7 @@ use AppBundle\Entity\BoardMember\BoardMember;
 use AppBundle\Entity\CitizenProject;
 use AppBundle\Entity\Committee;
 use AppBundle\Entity\CommitteeMembership;
+use AppBundle\Entity\District;
 use AppBundle\Geocoder\Coordinates;
 use AppBundle\Membership\AdherentEmailSubscription;
 use AppBundle\Statistics\StatisticsParametersFilter;
@@ -660,5 +661,26 @@ class AdherentRepository extends ServiceEntityRepository implements UserLoaderIn
         if (!$referent->isReferent()) {
             throw new \InvalidArgumentException('Adherent must be a referent.');
         }
+    }
+
+    /**
+     * Finds adherents in the deputy district.
+     *
+     * @param District $district
+     *
+     * @return Adherent[]
+     */
+    public function findAllInDistrict(District $district): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where("ST_Within(ST_GeomFromText(CONCAT('POINT(',a.postAddress.longitude,' ',a.postAddress.latitude,')')), :district) = 1")
+            ->andWhere('a.status = :status')
+            ->setParameter('district', $district->getGeoShape(), 'polygon')
+            ->setParameter('status', Adherent::ENABLED)
+            ->addOrderBy('a.firstName', 'ASC')
+            ->addOrderBy('a.lastName', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
     }
 }
