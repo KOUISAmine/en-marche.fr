@@ -132,6 +132,13 @@ class Adherent implements UserInterface, GeoPointInterface, EncoderAwareInterfac
     private $emailsSubscriptions;
 
     /**
+     * @var NotificationSubscription[]|Collection
+     *
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\NotificationSubscription", cascade={"all"})
+     */
+    private $notificationSubscriptions;
+
+    /**
      * @ORM\Column(type="integer", options={"default": 10})
      */
     private $citizenProjectCreationEmailSubscriptionRadius = self::CITIZEN_PROJECT_EMAIL_DEFAULT_DISTANCE;
