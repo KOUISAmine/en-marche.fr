@@ -5,6 +5,7 @@ namespace AppBundle\Repository;
 use AppBundle\Collection\CommitteeCollection;
 use AppBundle\Entity\Adherent;
 use AppBundle\Entity\Committee;
+use AppBundle\Entity\District;
 use AppBundle\Entity\Event;
 use AppBundle\Geocoder\Coordinates;
 use AppBundle\Coordinator\Filter\CommitteeFilter;
@@ -407,6 +408,27 @@ class CommitteeRepository extends ServiceEntityRepository
     public function retrieveLeastActiveCommitteesInReferentManagedArea(Adherent $referent, int $limit = 5): array
     {
         return $this->retrieveTopCommitteesInReferentManagedArea($referent, $limit, false);
+    }
+
+    /**
+     * Finds committees in the district.
+     *
+     * @param District $district
+     *
+     * @return Committee[]
+     */
+    public function findAllInDistrict(District $district): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->where('c.status = :status')
+            ->andWhere("ST_Within(ST_GeomFromText(CONCAT('POINT(',c.postAddress.longitude,' ',c.postAddress.latitude,')')), :district) = 1")
+            ->setParameter('district', $district->getGeoShape(), 'polygon')
+            ->setParameter('status', Committee::APPROVED)
+            ->orderBy('c.name', 'ASC')
+            ->orderBy('c.createdAt', 'DESC')
+        ;
+
+        return $qb->getQuery()->getResult();
     }
 
     private function retrieveTopCommitteesInReferentManagedArea(Adherent $referent, int $limit = 5, bool $mostActive = true): array
