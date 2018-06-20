@@ -222,4 +222,9 @@ class Event extends BaseEvent implements UserDocumentInterface, SynchronizedEnti
             return $referentTag->getCode();
         }, $this->referentTags->toArray());
     }
+
+    public function isReferentEvent(): bool
+    {
+        return null === $this->getCommittee();
+    }
 }

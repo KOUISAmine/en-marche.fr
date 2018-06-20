@@ -141,6 +141,7 @@
         <service id="AppBundle\Command\ReferentTagInitializeCommitteeEvent"/>
         <service id="AppBundle\Referent\ReferentTagManager" />
         <service id="AppBundle\Referent\ManagedCommitteesExporter" public="true" />
+        <service id="AppBundle\Referent\ManagedEventsExporter" public="true" />
 
         <!-- Report -->
         <service id="AppBundle\Report\ReportManager" />

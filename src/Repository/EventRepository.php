@@ -6,6 +6,7 @@ use AppBundle\Entity\Adherent;
 use AppBundle\Entity\BaseEvent;
 use AppBundle\Entity\CitizenAction;
 use AppBundle\Entity\Committee;
+use AppBundle\Entity\District;
 use AppBundle\Entity\Event;
 use AppBundle\Entity\ReferentTag;
 use AppBundle\Search\SearchParametersFilter;
@@ -206,6 +207,25 @@ class EventRepository extends ServiceEntityRepository
         $this->applyReferentGeoFilter($qb, $referent, 'e');
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return BaseEvent[]
+     */
+    public function findAllInDistrict(District $district): array
+    {
+        return $this->_em->getRepository(BaseEvent::class)->createQueryBuilder('e')
+            ->select('e', 'o')
+            ->leftJoin('e.organizer', 'o')
+            ->where('e.published = :published')
+            ->andWhere("ST_Within(ST_GeomFromText(CONCAT('POINT(',e.postAddress.longitude,' ',e.postAddress.latitude,')')), :district) = 1")
+            ->setParameter('district', $district->getGeoShape(), 'polygon')
+            ->orderBy('e.beginAt', 'DESC')
+            ->addOrderBy('e.name', 'ASC')
+            ->setParameter('published', true)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
